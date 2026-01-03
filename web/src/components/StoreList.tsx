@@ -112,8 +112,46 @@ export default function StoreList({ initialStores }: { initialStores: Store[] })
 
 function parseLocation(locationStr: string | null): { lat: number; lng: number } | null {
     if (!locationStr) return null;
-    // Parse WKT "POINT(lng lat)"
-    const match = locationStr.match(/POINT\s*\(([^ ]+)\s+([^ ]+)\)/);
+
+    // Check for Hex EWKB format (starts with 01 for little endian)
+    if (locationStr.match(/^[0-9A-Fa-f]+$/) && locationStr.length > 20) {
+        try {
+            // Basic EWKB Parser for Point (Little Endian)
+            // Header: 1 byte (endian) + 4 bytes (type) + 4 bytes (SRID) = 9 bytes (18 hex chars)
+            // Coords: 8 bytes (X) + 8 bytes (Y) = 16 bytes (32 hex chars) total
+
+            // We need to parse the hex into bytes
+            const bytes = new Uint8Array(locationStr.match(/[\da-f]{2}/gi)!.map((h) => parseInt(h, 16)));
+            const view = new DataView(bytes.buffer);
+
+            const endian = view.getUint8(0); // 1 = Little Endian
+            const isLittleEndian = endian === 1;
+
+            const type = view.getUint32(1, isLittleEndian);
+            // PostGIS Point type often has SRID flag (0x20000000)
+            // Type 1 is Point. 0x20000001 is Point with SRID.
+
+            // If SRID present (typical in PostGIS), offset is 9. If not, offset is 5.
+            // 0x20000000 check
+            const hasSrid = (type & 0x20000000) !== 0;
+
+            let offset = 5;
+            if (hasSrid) {
+                offset += 4; // Skip SRID
+            }
+
+            const lng = view.getFloat64(offset, isLittleEndian);
+            const lat = view.getFloat64(offset + 8, isLittleEndian);
+
+            return { lat, lng };
+        } catch (e) {
+            console.error("Failed to parse location hex:", e);
+            return null;
+        }
+    }
+
+    // Fallback: Parse WKT "POINT(lng lat)"
+    const match = locationStr.match(/POINT\s*\(([^ ]+)\s+([^ ]+)\)/i);
     if (match) {
         return {
             lng: parseFloat(match[1]),
