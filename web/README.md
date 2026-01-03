@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SnapPrice Web
 
-## Getting Started
+SnapPrice（スナッププライス）のフロントエンドアプリケーションです。
+Next.js (App Router) を使用して構築されており、Supabaseと連携して近隣スーパーの最安値比較を提供します。
 
-First, run the development server:
+## 主な機能
+
+- **商品検索**: 商品名で検索し、取り扱い店舗と価格を一括表示します。
+- **最安値比較**: 検索結果を「価格が安い順」に自動ソートし、地域最安値をハイライトします。
+- **位置情報連携**: ユーザーの現在地を取得し、各店舗までの距離を表示します。
+
+## 技術スタック
+
+- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Database**: [Supabase](https://supabase.com/) (PostgreSQL / PostGIS)
+- **Icons**: [Lucide React](https://lucide.dev/)
+
+## ローカル開発環境のセットアップ
+
+### 前提条件
+
+- Node.js 18以上
+- npm
+
+### インストール
+
+```bash
+cd web
+npm install
+```
+
+### 環境変数
+
+ルートディレクトリに `.env.local` ファイルを作成し、以下の変数を設定してください。
+（`scraper/.env` の値を流用可能です）
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 開発サーバーの起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで [http://localhost:3000](http://localhost:3000) にアクセスしてください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ディレクトリ構造
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/app`: Next.js App Routerのページコンポーネント
+- `src/components`: UIコンポーネント (`ProductSearch`, `StoreList` 等)
+- `src/lib`: ユーティリティ (`supabase.ts`, `location.ts`)
